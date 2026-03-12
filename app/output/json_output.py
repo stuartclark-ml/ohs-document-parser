@@ -1,7 +1,7 @@
 """
 JSON output assembly for OHS certificate extraction results.
 
-Takes the outputs from classification, extraction, and calendar modules
+Takes the outputs from extraction, calendar, and summary modules
 and assembles them into the final ExtractionResponse that FastAPI returns.
 
 Also generates domain-specific alerts based on certificate data:
@@ -18,9 +18,10 @@ from app.validation.schemas import (
     Alert,
     BaseExtractionResult,
     CalendarEntry,
-    ClassificationResult,
     DefectOutcome,
     ExtractionResponse,
+    LOLERExtractionResult,
+    PressureVesselExtractionResult,
 )
 
 
@@ -45,7 +46,7 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
     into the extraction result.
 
     This function creates structured Alert objects with a severity
-    level (CRITICAL, WARNING, INFO). Structured alerts let the
+    level (critical, warning, info). Structured alerts let the
     frontend display them differently — red banners for critical,
     yellow for warnings, blue for info. The raw warning strings
     are useful for the plain-English summary; the Alert objects
@@ -57,7 +58,6 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
     """
     alerts: list[Alert] = []
     today = date.today()
-    cert_number = extraction.certificate_number or "UNKNOWN"
 
     # --- CRITICAL: Immediate prohibition ---
     # If the examiner issued an immediate prohibition, the equipment
@@ -66,12 +66,11 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
     if extraction.defect_outcome == DefectOutcome.IMMEDIATE_PROHIBITION:
         alerts.append(
             Alert(
-                level="CRITICAL",
+                level="critical",
                 message=(
                     "IMMEDIATE PROHIBITION — Equipment must not be used. "
                     "Examiner has identified a defect involving danger."
                 ),
-                certificate_number=cert_number,
             )
         )
 
@@ -85,14 +84,13 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
         if days_until_due < 0:
             alerts.append(
                 Alert(
-                    level="CRITICAL",
+                    level="critical",
                     message=(
                         f"OVERDUE — Next examination was due "
                         f"{abs(days_until_due)} days ago on "
                         f"{extraction.next_examination_due.isoformat()}. "
                         f"Arrange re-examination immediately."
                     ),
-                    certificate_number=cert_number,
                 )
             )
 
@@ -102,13 +100,12 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
         elif days_until_due <= LEAD_ALERT_DAYS:
             alerts.append(
                 Alert(
-                    level="WARNING",
+                    level="warning",
                     message=(
                         f"Examination due in {days_until_due} days on "
                         f"{extraction.next_examination_due.isoformat()}. "
                         f"Book re-examination now."
                     ),
-                    certificate_number=cert_number,
                 )
             )
 
@@ -123,38 +120,35 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
             if days_to_repair < 0:
                 alerts.append(
                     Alert(
-                        level="CRITICAL",
+                        level="critical",
                         message=(
                             f"REPAIR DEADLINE PASSED — Repair was due "
                             f"{abs(days_to_repair)} days ago on "
                             f"{extraction.repair_deadline.isoformat()}. "
                             f"Equipment may need to be taken out of service."
                         ),
-                        certificate_number=cert_number,
                     )
                 )
             else:
                 alerts.append(
                     Alert(
-                        level="WARNING",
+                        level="warning",
                         message=(
                             f"Repair required within {days_to_repair} days "
                             f"(deadline: {extraction.repair_deadline.isoformat()}). "
                             f"Defect: {extraction.defect_description or 'See certificate'}."
                         ),
-                        certificate_number=cert_number,
                     )
                 )
         else:
             # Repair required but no deadline specified — still flag it
             alerts.append(
                 Alert(
-                    level="WARNING",
+                    level="warning",
                     message=(
                         "Repair required — no deadline specified on certificate. "
                         f"Defect: {extraction.defect_description or 'See certificate'}."
                     ),
-                    certificate_number=cert_number,
                 )
             )
 
@@ -164,12 +158,11 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
     if extraction.defect_outcome == DefectOutcome.ADVISORY:
         alerts.append(
             Alert(
-                level="INFO",
+                level="info",
                 message=(
                     f"Advisory: {extraction.defect_description or 'See certificate'}. "
                     f"Monitor condition before next examination."
                 ),
-                certificate_number=cert_number,
             )
         )
 
@@ -177,25 +170,28 @@ def generate_alerts(extraction: BaseExtractionResult) -> list[Alert]:
 
 
 def build_response(
-    extraction: BaseExtractionResult,
-    classification: ClassificationResult,
-    calendar_entries: list[CalendarEntry],
+    result: LOLERExtractionResult | PressureVesselExtractionResult,
+    calendar_entries: list[CalendarEntry] | None = None,
     alerts: list[Alert] | None = None,
+    summary: str = "",
+    processing_time_seconds: float | None = None,
 ) -> ExtractionResponse:
     """
     Assemble the final API response from all pipeline outputs.
 
     Parameters
     ----------
-    extraction : BaseExtractionResult
-        The parsed certificate data (either LOLER or PressureVessel subclass).
-    classification : ClassificationResult
-        The document type classification with confidence score.
-    calendar_entries : list[CalendarEntry]
+    result : LOLERExtractionResult or PressureVesselExtractionResult
+        The parsed certificate data.
+    calendar_entries : list[CalendarEntry] or None
         Calendar reminders generated for due dates.
     alerts : list[Alert] or None
         Pre-generated alerts. If None, this function will generate
         them from the extraction data.
+    summary : str
+        Plain-English summary text from summary.py.
+    processing_time_seconds : float or None
+        How long the pipeline took to run.
 
     Returns
     -------
@@ -215,13 +211,17 @@ def build_response(
     them internally. It makes code easier to test and more flexible.
     """
     if alerts is None:
-        alerts = generate_alerts(extraction)
+        alerts = generate_alerts(result)
+
+    if calendar_entries is None:
+        calendar_entries = []
 
     return ExtractionResponse(
-        extraction=extraction,
-        classification=classification,
+        result=result,
         calendar_entries=calendar_entries,
         alerts=alerts,
+        summary=summary,
+        processing_time_seconds=processing_time_seconds,
     )
 
 

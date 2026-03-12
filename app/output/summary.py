@@ -17,7 +17,6 @@ from datetime import date
 
 from app.validation.schemas import (
     BaseExtractionResult,
-    ClassificationResult,
     DefectOutcome,
     DocumentType,
     LOLERExtractionResult,
@@ -27,7 +26,6 @@ from app.validation.schemas import (
 
 def generate_summary(
     extraction: BaseExtractionResult,
-    classification: ClassificationResult,
 ) -> str:
     """
     Generate a plain-English summary of a certificate extraction.
@@ -37,8 +35,8 @@ def generate_summary(
     extraction : BaseExtractionResult
         The parsed certificate data. Will be either a
         LOLERExtractionResult or PressureVesselExtractionResult.
-    classification : ClassificationResult
-        The document type classification result.
+        The document_type field is on BaseExtractionResult itself,
+        so we don't need a separate ClassificationResult.
 
     Returns
     -------
@@ -52,18 +50,15 @@ def generate_summary(
     (Streamlit), or plain text (this summary). Keeping presentation
     logic in separate modules follows the Single Responsibility
     Principle — the model holds data, the output modules format it.
-
-    This is the same reason we have json_output.py and calendar.py
-    as separate modules rather than methods on the Pydantic models.
     """
     # Build the summary in sections, then join them at the end
     sections = []
 
     # --- Header section ---
-    sections.append(_build_header(extraction, classification))
+    sections.append(_build_header(extraction))
 
     # --- Equipment/system details ---
-    sections.append(_build_details(extraction, classification))
+    sections.append(_build_details(extraction))
 
     # --- Dates section ---
     sections.append(_build_dates(extraction))
@@ -88,17 +83,13 @@ def generate_summary(
     return "\n\n".join(filter(None, sections))
 
 
-def _build_header(
-    extraction: BaseExtractionResult,
-    classification: ClassificationResult,
-) -> str:
+def _build_header(extraction: BaseExtractionResult) -> str:
     """
-    Build the summary header with document type and confidence.
+    Build the summary header with document type and certificate number.
 
     Returns something like:
         LOLER Thorough Examination Report
         Certificate: CERT-2024-001
-        Classification confidence: 95%
     """
     # Map the DocumentType enum to a human-friendly label
     # Using a dict for this is cleaner than if/elif chains
@@ -109,26 +100,21 @@ def _build_header(
     }
 
     doc_label = type_labels.get(
-        classification.document_type,
+        extraction.document_type,
         "Unknown Document Type",
     )
 
     cert = extraction.certificate_number or "Not found"
-    confidence = f"{classification.confidence:.0%}"
 
     lines = [
         doc_label,
         f"Certificate: {cert}",
-        f"Classification confidence: {confidence}",
     ]
 
     return "\n".join(lines)
 
 
-def _build_details(
-    extraction: BaseExtractionResult,
-    classification: ClassificationResult,
-) -> str:
+def _build_details(extraction: BaseExtractionResult) -> str:
     """
     Build the equipment or system details section.
 
@@ -163,6 +149,9 @@ def _build_details(
             f"  Safe Working Load: "
             f"{extraction.safe_working_load or 'Not found'}"
         )
+        lines.append(
+            f"  Location: {extraction.location or 'Not found'}"
+        )
 
     elif isinstance(extraction, PressureVesselExtractionResult):
         lines.append(
@@ -177,13 +166,11 @@ def _build_details(
             f"  Max Working Pressure: "
             f"{extraction.maximum_allowable_working_pressure or 'Not found'}"
         )
+        lines.append(
+            f"  Location: {extraction.location or 'Not found'}"
+        )
 
     # Fields common to both document types
-    lines.append(
-        f"  Location: {extraction.location or 'Not found'}"
-        if hasattr(extraction, 'location')
-        else ""
-    )
     lines.append(
         f"  Issuing body: {extraction.issuing_body or 'Not found'}"
     )
