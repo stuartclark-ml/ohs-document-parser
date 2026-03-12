@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
@@ -25,12 +25,12 @@ jobs:
 
     - name: Lint with ruff
       run: |
-        pip install ruff
+        pip install ruff 
         ruff check .
 
     - name: Type check with mypy
       run: |
-        pip install mypy
+        pip install mypy types-python-dateutil
         mypy . --ignore-missing-imports
 
     - name: Run tests
