@@ -8,7 +8,7 @@ Uses the CalendarEntry schema from validation/schemas.py and
 the LEAD_ALERT_DAYS setting from config.py.
 """
 
-from datetime import date, timedelta
+from datetime import timedelta
 from uuid import uuid4
 
 from app.config import LEAD_ALERT_DAYS
