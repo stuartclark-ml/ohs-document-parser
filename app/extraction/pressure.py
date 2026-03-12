@@ -14,6 +14,7 @@ from app.extraction.regex_patterns import (
 )
 from app.extraction.llm_extractor import extract_fields
 from app.validation.schemas import (
+    DocumentType,
     PressureVesselExtractionResult,
     DefectOutcome,
     ExtractionMethod,
@@ -44,7 +45,7 @@ def extract_pressure_vessel(
     # --- Step 2: LLM extraction ---
     # For fields requiring contextual understanding:
     # free-text descriptions, locations, defect outcomes, dates.
-    llm_result = extract_fields(text, "PRESSURE_VESSEL")
+    llm_result = extract_fields(text, DocumentType.PRESSURE_VESSEL)
 
     # --- Step 3: Parse dates from LLM output ---
     # LLM is instructed to return dates as YYYY-MM-DD strings.
