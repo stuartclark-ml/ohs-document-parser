@@ -12,7 +12,7 @@ scanned PDF, or camera photo.
 from pathlib import Path
 
 from app.config import OCR_TEXT_LENGTH_THRESHOLD
-from app.ingestion.pdf_extractor import extract_text_from_pdf, is_scanned_pdf
+from app.ingestion.pdf_extractor import extract_text_from_pdf
 from app.ingestion.image_extractor import extract_text_from_image
 from app.validation.schemas import ExtractionMethod
 
