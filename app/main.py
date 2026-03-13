@@ -30,6 +30,8 @@ from app.output.summary import generate_summary
 from app.validation.schemas import (
     DocumentType,
     ExtractionResponse,
+    LOLERExtractionResult,
+    PressureVesselExtractionResult,
 )
 
 
@@ -180,6 +182,9 @@ async def extract_certificate(file: UploadFile) -> ExtractionResponse:
         classification = classify_document(text)
 
         # --- Step 3: Field extraction ---
+        
+        result: LOLERExtractionResult | PressureVesselExtractionResult
+
         if classification.document_type == DocumentType.LOLER:
             result = extract_loler(text, extraction_method)
         else:
