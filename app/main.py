@@ -14,7 +14,6 @@ automatically during development. Never use --reload in production.
 
 import time
 import tempfile
-import shutil
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, HTTPException
