@@ -58,10 +58,25 @@ def create_calendar_entry(
 
     # Build a human-readable title for the calendar event
     # e.g. "LOLER Examination Due — CERT-2024-001"
-    title = (
-        f"{document_type.value} Examination Due"
-        f" — {extraction.certificate_number or 'Unknown Certificate'}"
-    )
+    
+    equipment_label = ""
+    if hasattr(extraction, "equipment_description") and extraction.equipment_description:
+        equipment_label = extraction.equipment_description
+    elif hasattr(extraction, "system_description") and extraction.system_description:
+        equipment_label = extraction.system_description
+
+    cert_label = extraction.certificate_number or "No cert number"
+
+    if equipment_label:
+        title = (
+            f"{document_type.value} Examination Due"
+            f" — {equipment_label} ({cert_label})"
+        )
+    else:
+        title = (
+            f"{document_type.value} Examination Due"
+            f" — {cert_label}"
+        )
 
     # Calculate the lead alert date — LEAD_ALERT_DAYS before the due date
     # This is when the reminder notification should fire
