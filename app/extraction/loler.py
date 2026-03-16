@@ -13,6 +13,7 @@ Also handles post-extraction logic:
 
 from datetime import date
 from app.extraction.llm_extractor import extract_fields
+from app.extraction.regex_patterns import parse_date_string
 from app.validation.schemas import (
     LOLERExtractionResult,
     DefectOutcome,
@@ -48,8 +49,8 @@ def extract_loler(
         certificate_number=raw.get("certificate_number"),
         issuing_body=raw.get("issuing_body"),
         examiner_name=raw.get("examiner_name"),
-        date_of_examination=raw.get("date_of_examination"),
-        next_examination_due=raw.get("next_examination_due"),
+        date_of_examination=parse_date_string(raw.get("date_of_examination")),
+        next_examination_due=parse_date_string(raw.get("next_examination_due")),
         equipment_description=raw.get("equipment_description"),
         equipment_id=raw.get("equipment_id"),
         safe_working_load=raw.get("safe_working_load"),
@@ -58,7 +59,7 @@ def extract_loler(
             raw.get("defect_outcome", "NONE")
         ),
         defect_description=raw.get("defect_description"),
-        repair_deadline=raw.get("repair_deadline"),
+        repair_deadline=parse_date_string(raw.get("repair_deadline")),
     )
 
     # Run post-extraction checks and populate warnings
