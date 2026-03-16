@@ -30,7 +30,7 @@ jobs:
 
     - name: Type check with mypy
       run: |
-        pip install mypy types-python-dateutil
+        pip install mypy types-python-dateutil types-requests
         mypy . --ignore-missing-imports
 
     - name: Run tests
