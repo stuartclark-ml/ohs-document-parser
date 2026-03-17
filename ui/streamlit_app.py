@@ -22,8 +22,7 @@ import streamlit as st
 # The FastAPI backend URL. In development this is localhost.
 # In production on Railway, both services run on the same host
 # or you'd set this via environment variable.
-API_BASE_URL = "http://127.0.0.1:8000"
-
+API_BASE_URL = "https://ohs-document-parser-production.up.railway.app"
 
 # --- Page config ---
 # Must be the first Streamlit command in the script.
