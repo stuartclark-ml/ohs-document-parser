@@ -19,7 +19,7 @@ MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "google")
 # Change this one value to switch the entire pipeline between providers
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
-GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.0-flash")
+GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
@@ -35,7 +35,7 @@ CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.7"))
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
 # Maximum uploaded file size in megabytes
 
-OCR_TEXT_LENGTH_THRESHOLD = int(os.getenv("OCR_TEXT_LENGTH_THRESHOLD", "100"))
+OCR_TEXT_LENGTH_THRESHOLD = int(os.getenv("OCR_TEXT_LENGTH_THRESHOLD", "200"))
 # If extracted PDF text is below this character count, treat as scanned
 # and fall back to OCR
 
