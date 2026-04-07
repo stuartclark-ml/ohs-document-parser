@@ -6,7 +6,7 @@
 
 An end-to-end Machine Learning pipeline that automates the extraction and structuring of data from complex health and safety compliance records (e.g., LOLER, pressure vessel certificates). 
 
-**[View the Live Demo]((https://comfortable-achievement-production.up.railway.app/))**
+**[View the Live Demo](https://comfortable-achievement-production.up.railway.app/)**
 
 ![UI Screenshot](https://github.com/user-attachments/assets/97eb2914-778b-4610-84df-fad502e85c06)
 
