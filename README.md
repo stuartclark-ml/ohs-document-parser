@@ -22,7 +22,7 @@ Manual auditing of OHS certificates is error-prone and time-intensive. This API 
 
 ## Tech Stack
 * **Backend:** FastAPI, Python
-* **AI/ML:** Gemini 2.5 Flash API, ModernBERT
+* **AI/ML:** Gemini 2.5, Flash API
 * **Data Validation:** Pydantic v2
 * **Document Processing:** PyMuPDF
 * **Frontend:** Streamlit
